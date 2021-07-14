@@ -1,4 +1,5 @@
 const Scheme = require("./scheme-model");
+const db = require("../../data/db-config");
 
 /*
   If `scheme_id` does not exist in the database:
@@ -8,13 +9,32 @@ const Scheme = require("./scheme-model");
     "message": "scheme with scheme_id <actual id> not found"
   }
 */
+// const checkSchemeId = async (req, res, next) => {
+//   try {
+//     const id = await Scheme.findById(req.params.id);
+//     if (!id) {
+//       next({
+//         status: 404,
+//         message: `scheme with scheme_id ${req.params.id} not found`,
+//       });
+//     } else {
+//       next();
+//     }
+//   } catch (err) {
+//     next(err);
+//   }
+// };
+
 const checkSchemeId = async (req, res, next) => {
   try {
-    const id = await Scheme.findById(req.params.id);
-    if (!id) {
+    const existing = await db("schemes").where(
+      "scheme_id",
+      req.params.scheme_id
+    );
+    if (!existing) {
       next({
         status: 404,
-        message: `scheme with scheme_id ${req.params.id} not found`,
+        message: `scheme with scheme_id ${req.params.scheme_id} not found`,
       });
     } else {
       next();
@@ -33,18 +53,18 @@ const checkSchemeId = async (req, res, next) => {
   }
 */
 const validateScheme = (req, res, next) => {
-  try {
-    const newScheme = !req.body.scheme_name;
-    if (!newScheme || newScheme === "" || typeof newScheme !== "string") {
-      next({
-        status: 400,
-        message: "invalid scheme_name",
-      });
-    } else {
-      next();
-    }
-  } catch (err) {
-    next(err);
+  const newScheme = !req.body.scheme_name;
+  if (
+    newScheme === undefined ||
+    !newScheme.trim() ||
+    typeof newScheme !== "string"
+  ) {
+    next({
+      status: 400,
+      message: "invalid scheme_name",
+    });
+  } else {
+    next();
   }
 };
 
@@ -58,22 +78,18 @@ const validateScheme = (req, res, next) => {
   }
 */
 const validateStep = (req, res, next) => {
-  try {
-    const { instructions, step_number } = req.body;
-    if (
-      !instructions ||
-      instructions === "" ||
-      typeof instructions !== "string" ||
-      typeof step_number !== "number" ||
-      step_number < 1
-    ) {
-      next({
-        status: 400,
-        message: "invalid step",
-      });
-    }
-  } catch (err) {
-    next(err);
+  const { instructions, step_number } = req.body;
+  if (
+    instructions === undefined ||
+    !instructions.trim() ||
+    typeof instructions !== "string" ||
+    typeof step_number !== "number" ||
+    step_number < 1
+  ) {
+    next({
+      status: 400,
+      message: "invalid step",
+    });
   }
 };
 

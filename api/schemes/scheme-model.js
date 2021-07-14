@@ -20,12 +20,14 @@ function find() {
   */
   return db("schemes as sc")
     .leftJoin("steps as st", "sc.scheme_id", "st.scheme_id")
-    .count("st.step_id")
-    .select("sc.*", "st.step_id");
+    .count("st.step_id as number_of_steps")
+    .select("sc.*")
+    .groupBy("sc.scheme_id")
+    .orderBy("sc.scheme_id", "asc");
 }
 
-async function findById(scheme_id) {
-  const scheme = await db("schemes as sc")
+function findById(scheme_id) {
+  const scheme = db("schemes as sc")
     .leftJoin("steps as st", "sc.scheme_id", "st.scheme_id")
     .select(
       "sc.scheme_id",
@@ -106,6 +108,10 @@ async function findById(scheme_id) {
 }
 
 function findSteps(scheme_id) {
+  const steps = db("scheme as sc")
+    .leftJoin("steps as st", "sc.scheme_id", "st.scheme_id")
+    .select("st.step_id", "st.step_number", "st.instructions", "sc.scheme_name")
+    .where("sc.scheme_id", scheme_id);
   // EXERCISE C
   /*
     1C- Build a query in Knex that returns the following data.
